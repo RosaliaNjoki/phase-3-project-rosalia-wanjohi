@@ -1,4 +1,6 @@
-from __init__ import CURSOR, CONN
+from models.__init__ import CURSOR, CONN
+from models.rooms import Room
+from models.students import Student
 
 class Allocation:
 

@@ -2,10 +2,24 @@ from __init__ import CURSOR, CONN
 
 class Hostel:
 
+    MAX_CAPACITY = 300  # Maximum capacity per hostel
+
     def __init__(self, name, capacity, id=None):
-        self.id = id
-        self.name = name
-        self.capacity = capacity
+        self._id = id
+        self._name = name
+        self._capacity = capacity
+
+    @property
+    def capacity(self):
+        return self._capacity
+
+    @capacity.setter
+    def capacity(self, value):
+        if value <= 0:
+            raise ValueError("Capacity must be a positive integer.")
+        if value > self.MAX_CAPACITY:
+            raise ValueError(f"Capacity cannot exceed {self.MAX_CAPACITY} rooms per hostel.")
+        self._capacity = value
 
     def __repr__(self):
         return f"<Hostel {self.id}: {self.name}, {self.capacity}>"
@@ -14,13 +28,15 @@ class Hostel:
     def create_table(cls):
         """ Create a new table to persist the attributes of Hostel instances """
         sql="""
-            CREATE TABLE IF NOT EXISTS hostels
-            (id INTEGER PRIMARY KEY, 
-            name TEXT, 
-            capacity INTEGER)
+            CREATE TABLE IF NOT EXISTS hostels (
+                id INTEGER PRIMARY KEY, 
+                name TEXT NOT NULL, 
+                capacity INTEGER NOT NULL
+            )
         """
         CURSOR.execute(sql)
         CONN.commit()
+
     @classmethod 
     def drop_table(cls):
         """ Drop the table that persists Hostel instances """
@@ -35,10 +51,9 @@ class Hostel:
         Update object id attribute using the primary key value of new row.
         """
         sql ="""
-            INSERT INTO students(name, capacity)
-            VALUES (?,?)
+            INSERT INTO hostels(name, capacity)
+            VALUES (?, ?)
         """   
-
         CURSOR.execute(sql, (self.name, self.capacity))
         CONN.commit()
         self.id = CURSOR.lastrowid 
@@ -54,8 +69,8 @@ class Hostel:
         """Update the table row corresponding to the current Hostel instance."""
         sql ="""
             UPDATE hostels 
-            SET name = ?, capacity=? 
-            WHERE id =?
+            SET name = ?, capacity = ? 
+            WHERE id = ?
         """
         CURSOR.execute(sql, (self.name, self.capacity, self.id))
         CONN.commit()
@@ -64,25 +79,30 @@ class Hostel:
         """Delete the table row corresponding to the current Hostel instance"""
         sql= """
             DELETE FROM hostels
-            WHERe id =?
+            WHERE id = ?
         """
-
         CURSOR.execute(sql, (self.id,))
         CONN.commit()
 
     @classmethod
-    def find_by_id(db, hostel_id):
-        db.cur.execute("SELECT * FROM hostels WHERE id = ?", (hostel_id,))
-        row = db.cur.fetchone()
+    def find_by_id(cls, hostel_id):
+        """Find a hostel by its ID."""
+        CURSOR.execute("SELECT * FROM hostels WHERE id = ?", (hostel_id,))
+        row = CURSOR.fetchone()
         if row:
             return Hostel(*row)  
 
     @classmethod 
-    def get_all(db):
-        db.cur.execute("SELECT * FROM hostels")
-        rows = db.cur.fetchall()
+    def get_all(cls):
+        """Get all hostels from the database."""
+        CURSOR.execute("SELECT * FROM hostels")
+        rows = CURSOR.fetchall()
         hostels = []
         for row in rows:
             hostel = Hostel(*row)
             hostels.append(hostel)
-        return hostels     
+        return hostels
+
+    def get_rooms(self):
+        """Get all rooms belonging to this hostel."""
+        return Room.get_rooms_by_hostel_id(self.id)

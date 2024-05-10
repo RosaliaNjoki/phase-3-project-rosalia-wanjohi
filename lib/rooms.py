@@ -2,11 +2,25 @@ from __init__ import CURSOR, CONN
 
 class Room:
 
+    MAX_CAPACITY_PER_ROOM = 4  # Maximum bedspace per room
+
     def __init__(self, room_number, capacity, hostel_id, id=None):
-        self.id = id
-        self.room_number = room_number
-        self.capacity = capacity
-        self.hostel_id = hostel_id
+        self._id = id
+        self._room_number = room_number
+        self._capacity = capacity
+        self._hostel_id = hostel_id
+
+    @property
+    def capacity(self):
+        return self._capacity
+
+    @capacity.setter
+    def capacity(self, value):
+        if value <= 0:
+            raise ValueError("Capacity must be a positive integer.")
+        if value > self.MAX_CAPACITY_PER_ROOM:
+            raise ValueError(f"Capacity cannot exceed {self.MAX_CAPACITY_PER_ROOM} beds per room.")
+        self._capacity = value
 
     def __repr__(self):
         return f"<Room {self.id}: {self.room_number}, {self.capacity}, {self.hostel_id}>"
@@ -15,15 +29,17 @@ class Room:
     def create_table(cls):
         """ Create a new table to persist the attributes of Room instances """
         sql="""
-            CREATE TABLE IF NOT EXISTS rooms
-            (id INTEGER PRIMARY KEY, 
-            room_number TEXT NOT NULL, 
-            capacity INTEGER, 
-            hostel_id INTEGER)
-            FOREIGN KEY (hostel_id) REFERENCES hostels(id)
+            CREATE TABLE IF NOT EXISTS rooms (
+                id INTEGER PRIMARY KEY, 
+                room_number TEXT NOT NULL, 
+                capacity INTEGER, 
+                hostel_id INTEGER,
+                FOREIGN KEY (hostel_id) REFERENCES hostels(id)
+            )
         """
         CURSOR.execute(sql)
         CONN.commit()
+
     @classmethod 
     def drop_table(cls):
         """ Drop the table that persists Room instances """
@@ -41,7 +57,6 @@ class Room:
             INSERT INTO rooms(room_number, capacity, hostel_id)
             VALUES (?,?, ?)
         """   
-
         CURSOR.execute(sql, (self.room_number, self.capacity, self.hostel_id))
         CONN.commit()
         self.id = CURSOR.lastrowid 
@@ -67,25 +82,49 @@ class Room:
         """Delete the table row corresponding to the current Room instance"""
         sql= """
             DELETE FROM rooms
-            WHERe id =?
+            WHERE id =?
         """
-
         CURSOR.execute(sql, (self.id,))
         CONN.commit()
 
     @classmethod
-    def find_by_id(db, room_id):
-        db.cur.execute("SELECT * FROM rooms WHERE id = ?", (room_id,))
-        row = db.cur.fetchone()
+    def find_by_id(cls, room_id):
+        """Find a room by its ID."""
+        CURSOR.execute("SELECT * FROM rooms WHERE id = ?", (room_id,))
+        row = CURSOR.fetchone()
         if row:
-            return Room(*row)  
+            return Room(*row)
 
     @classmethod 
-    def get_all(db):
-        db.cur.execute("SELECT * FROM rooms")
-        rows = db.cur.fetchall()
+    def get_all(cls):
+        """Get all rooms from the database."""
+        CURSOR.execute("SELECT * FROM rooms")
+        rows = CURSOR.fetchall()
         rooms = []
         for row in rows:
             room = Room(*row)
             rooms.append(room)
-        return rooms     
+        return rooms
+
+    @classmethod
+    def get_rooms_by_hostel_id(cls, hostel_id):
+        """Get all rooms belonging to the hostel with the given ID."""
+        CURSOR.execute("SELECT * FROM rooms WHERE hostel_id = ?", (hostel_id,))
+        rows = CURSOR.fetchall()
+        rooms = []
+        for row in rows:
+            room = Room(*row)
+            rooms.append(room)
+        return rooms
+
+    def add_student(self, student_id):
+        """Add a student with the given ID to this room."""
+        allocation = Allocation(student_id=student_id, room_id=self.id)
+        allocation.save()
+
+    def remove_student(self, student_id):
+        """Remove a student with the given ID from this room."""
+        allocations = Allocation.get_allocations_by_room_id(self.id)
+        for allocation in allocations:
+            if allocation.student_id == student_id:
+                allocation.delete()    

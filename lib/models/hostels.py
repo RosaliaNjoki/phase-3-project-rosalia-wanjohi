@@ -6,7 +6,7 @@ class Hostel:
 
     def __init__(self, name, capacity, id=None):
         self.id = id
-        self._name = str(name) 
+        self._name = str(name)
         self._capacity = capacity  
 
     @property

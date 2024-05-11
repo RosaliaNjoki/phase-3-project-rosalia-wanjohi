@@ -1,18 +1,29 @@
 from models.__init__ import CURSOR, CONN
 
-
 class Hostel:
 
     MAX_CAPACITY = 300  # Maximum capacity per hostel
 
     def __init__(self, name, capacity, id=None):
-        self._id = id
-        self._name = name
-        self._capacity = capacity
+        self.id = id
+        self._name = str(name) 
+        self._capacity = capacity  
+
+    @property
+    def name(self):
+        return self._name 
+
+    @name.setter
+    def name(self, value):
+        if not isinstance(value, str):
+            raise ValueError("Name must be a string.")
+        if len(value) < 1 or len(value) > 25:
+            raise ValueError("Name must have between 1 and 25 characters.")
+        self._name = value  
 
     @property
     def capacity(self):
-        return self._capacity
+        return self._capacity  
 
     @capacity.setter
     def capacity(self, value):
@@ -20,7 +31,7 @@ class Hostel:
             raise ValueError("Capacity must be a positive integer.")
         if value > self.MAX_CAPACITY:
             raise ValueError(f"Capacity cannot exceed {self.MAX_CAPACITY} rooms per hostel.")
-        self._capacity = value
+        self._capacity = value  
 
     def __repr__(self):
         return f"<Hostel {self.id}: {self.name}, {self.capacity}>"

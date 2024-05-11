@@ -4,19 +4,21 @@ class Student:
 
     def __init__(self, name, gender, department, id=None):
         self.id = id
-        self.name = name
+        self._name = str(name)  
         self.gender = gender
         self.department = department
 
     @property
-    def gender(self):
-        return self._gender
+    def name(self):
+        return self._name  
 
-    @gender.setter
-    def gender(self, value):
-        if value not in ['Male', 'Female']:
-            raise ValueError("Gender must be either 'Male' or 'Female'.")
-        self._gender = value
+    @name.setter
+    def name(self, value):
+        if not isinstance(value, str):
+            raise ValueError("Name must be a string.")
+        if len(value) < 1 or len(value) > 25:
+            raise ValueError("Name must have between 1 and 25 characters.")
+        self._name = value  
 
     def __repr__(self):
         return f"<Student {self.id}: {self.name}, {self.gender}, {self.department}>"
@@ -100,15 +102,3 @@ class Student:
             student = Student(*row)
             students.append(student)
         return students
-
-    def allocate_to_room(self, room_id):
-        """Allocate this student to the room with the given ID."""
-        allocation = Allocation(student_id=self.id, room_id=room_id)
-        allocation.save()
-
-    def deallocate_from_room(self, room_id):
-        """Deallocate this student from the room with the given ID."""
-        allocations = Allocation.get_allocations_by_student_id(self.id)
-        for allocation in allocations:
-            if allocation.room_id == room_id:
-                allocation.delete()    

@@ -24,7 +24,7 @@ class Room:
         self._capacity = value
 
     def __repr__(self):
-        return f"<Room {self.id}: {self.room_number}, {self.capacity}, {self.hostel_id}>"
+        return f"<Room {self._id}: {self._room_number}, {self._capacity}, {self._hostel_id}>"
 
     @classmethod 
     def create_table(cls):

@@ -34,19 +34,9 @@ class Allocation:
             DROP TABLE IF EXISTS allocations;  
         """
         CURSOR.execute(sql)
-        CONN.commit()
+       CONN.commit()
 
-    def save(self):
-        """ Insert a new row with the student_id and room_id values of the current Allocation instance.
-        Update object id attribute using the primary key value of new row.
-        """
-        sql ="""
-            INSERT INTO allocations(student_id, room_id)
-            VALUES (?,?)
-        """   
-        CURSOR.execute(sql, (self.student_id, self.room_id))
-        CONN.commit()
-        self.id = CURSOR.lastrowid 
+    
 
     @classmethod 
     def create(cls, student_id, room_id):
@@ -122,7 +112,7 @@ class Allocation:
         Update object id attribute using the primary key value of new row.
         """
         # Check if the student is already allocated to another room
-        existing_allocation = Allocation.get_allocation_by_student_id(self.student_id)
+        existing_allocation = Allocation.get_allocations_by_student_id(self.student_id)
         if existing_allocation:
             raise ValueError("Student is already allocated to another room.")
 

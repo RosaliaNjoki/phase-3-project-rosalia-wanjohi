@@ -1,11 +1,11 @@
-from flask import Flask, request, jsonify
+from flask import Blueprint, request, jsonify
 from models.allocations import Allocation
-from models.__init__ import CONN
-
-app = Flask(__name__)
 
 
-@app.route('/allocations', methods = ['Get'])
+hostels_bp = Blueprint('allocations', __name__, url_prefix = '/allocations')
+
+
+@hostels_bp.route('/', methods = ['GET'])
 def get_allocations(): 
     all_allocs = Allocation.get_all()
     data =[{
@@ -15,7 +15,7 @@ def get_allocations():
     } for a in all_allocs]
     return jsonify(data)
 
-@app.route('/allocte', methods=['POST'])
+@allocations_bp.route('/create', methods=['POST'])
 def allocate_student():
     data = request.json
     try: 
@@ -29,7 +29,7 @@ def allocate_student():
         return jsonify({"error": str(e)}), 400
 
 
-@app.route('/reassign', methods =['POST'])
+@allocations_bp.route('/reassign', methods =['POST'])
 def reassign_student():
     data = request.json
     try: 
@@ -43,5 +43,3 @@ def reassign_student():
         return jsonify({"error": str(e)}), 500
 
 
-if __name__ == "__main__":
-    app.run(debug=True)

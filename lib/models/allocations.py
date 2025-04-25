@@ -36,8 +36,6 @@ class Allocation:
         CURSOR.execute(sql)
        CONN.commit()
 
-    
-
     @classmethod 
     def create(cls, student_id, room_id):
         """ Initialize a new Allocation instance and save the object to the database """
@@ -105,7 +103,24 @@ class Allocation:
             allocations.append(allocation)
         return allocations  
 
+    @classmethod
+    def reassign(cls, student_id, new_room_id):
+        """
+        Reassigns a student to a new room by removing their current allocation (if any) and saving a new one
+        """
+        existing_allocations = Allocation.get_allocations_by_student_id(self.student_id)
+        if existing_allocations: 
+            raise ValueError("Student is already allocated to another room.")
 
+        sql = """
+            INSERT INTO allocations(student_id, room_id)
+            VALUES (?,?)
+        """    
+        CURSOR.execute(sql, (self.student_id, self.room_id))
+        CONN.commit()
+        self.id = CURSOR.lastrowid
+
+        
     def save(self):
         """ 
         Insert a new row with the student_id and room_id values of the current Allocation instance.
@@ -124,4 +139,6 @@ class Allocation:
         CURSOR.execute(sql, (self.student_id, self.room_id))
         CONN.commit()
         self.id = CURSOR.lastrowid
+
+
           

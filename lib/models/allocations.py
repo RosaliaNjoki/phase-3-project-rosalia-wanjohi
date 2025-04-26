@@ -34,7 +34,7 @@ class Allocation:
             DROP TABLE IF EXISTS allocations;  
         """
         CURSOR.execute(sql)
-       CONN.commit()
+        CONN.commit()
 
     @classmethod 
     def create(cls, student_id, room_id):

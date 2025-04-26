@@ -2,10 +2,10 @@ from flask import Blueprint, request, jsonify
 from models.allocations import Allocation
 
 
-hostels_bp = Blueprint('allocations', __name__, url_prefix = '/allocations')
+allocations_bp = Blueprint('allocations', __name__, url_prefix = '/allocations')
 
 
-@hostels_bp.route('/', methods = ['GET'])
+@allocations_bp.route('/', methods = ['GET'])
 def get_allocations(): 
     all_allocs = Allocation.get_all()
     data =[{

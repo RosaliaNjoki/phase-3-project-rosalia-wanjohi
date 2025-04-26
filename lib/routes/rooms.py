@@ -1,4 +1,4 @@
-from flask import Blueprint, request jsonify
+from flask import Blueprint, request, jsonify
 from models.rooms import Room 
 
 rooms_bp = Blueprint('rooms', __name__, url_prefix = '/rooms')
@@ -22,7 +22,7 @@ def create_room():
     except Exception as e:
         return {"error": str(e)}, 400
 
-@room_bp.route('/<int:id>', methods = ['PUT'])
+@rooms_bp.route('/<int:id>', methods = ['PUT'])
 def update_room(id):
     room = Room.find_by_id(id) 
     if not room: 

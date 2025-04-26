@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from models.students import Student 
 
-student_bp = Blueprint('student', __name__, url_prefix = '/students')
+students_bp = Blueprint('students', __name__, url_prefix = '/students')
 
 @students_bp.route('/', methods = ['GET'])
 def list_students():
@@ -24,7 +24,7 @@ def create_student():
     except Exception as e: 
         return jsonify({"error": str(e)}), 400
 
-@students_bp.router('/<int:id>', methods = ['PUT'])
+@students_bp.route('/<int:id>', methods = ['PUT'])
 def update_student(id):
     student = Student.find_by_id(id)
     if not student:

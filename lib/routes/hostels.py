@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
-from models.hostels import hostel_id
+from models.hostels import Hostel
 
-hostels_bp = Blueprint, request, jsonify
+hostels_bp = Blueprint('hostels_bp', __name__, url_prefix = '/hostels')
 
 @hostels_bp.route('/', methods = ['GET'])
 def list_hostels():
@@ -9,7 +9,7 @@ def list_hostels():
     return jsonify([vars(h) for h in hostels])
 
 @hostels_bp.route('/<int:id>', methods = ['GET'])
-def get_hostel(id):
+def get_hostel(name):
     hostel = Hostel.find_by_id(id)
     return jsonify(vars(hostel)) if hostel else ("Hostel not found", 404)
 
